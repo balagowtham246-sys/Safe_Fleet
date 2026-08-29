@@ -1,0 +1,10 @@
+{
+  "name": "SafeFleet AI",
+  "description": "Intelligent Fleet Management & Driver Safety Monitoring System with real-time risk detection, dynamic compound risk engine, and proactive safety intervention.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

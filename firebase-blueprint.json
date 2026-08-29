@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "SafeFleet user profile and role definition for access control",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["manager", "driver"] },
+        "driverId": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "name", "email", "role", "active"]
+    },
+    "Vehicle": {
+      "title": "Vehicle",
+      "description": "Fleet vehicle telemetry, location, and risk status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "plateNumber": { "type": "string" },
+        "driverId": { "type": "string" },
+        "driverName": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "speed": { "type": "number" },
+        "speedLimit": { "type": "number" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "locationName": { "type": "string" },
+        "fuelLevel": { "type": "number" },
+        "odometerKm": { "type": "number" },
+        "riskLevel": { "type": "string" },
+        "riskScore": { "type": "number" },
+        "activeAlerts": { "type": "array", "items": { "type": "string" } },
+        "lastUpdated": { "type": "string" }
+      },
+      "required": ["id", "name", "plateNumber", "status"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "description": "Fleet driver profile, safety score, and status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "phone": { "type": "string" },
+        "status": { "type": "string" },
+        "currentVehicleId": { "type": "string" },
+        "currentVehicleName": { "type": "string" },
+        "safetyScore": { "type": "number" },
+        "riskLevel": { "type": "string" },
+        "totalDistanceKm": { "type": "number" },
+        "incidentsCount": { "type": "number" },
+        "recentSpeedingEvents": { "type": "number" },
+        "recentDistractionEvents": { "type": "number" },
+        "recentFatigueEvents": { "type": "number" },
+        "coachingNotes": { "type": "string" }
+      },
+      "required": ["id", "name", "safetyScore", "status"]
+    },
+    "Incident": {
+      "title": "Incident",
+      "description": "Safety incident or risk event log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "vehicleId": { "type": "string" },
+        "vehicleName": { "type": "string" },
+        "driverId": { "type": "string" },
+        "driverName": { "type": "string" },
+        "eventType": { "type": "string" },
+        "severity": { "type": "string" },
+        "riskScore": { "type": "number" },
+        "speed": { "type": "number" },
+        "speedLimit": { "type": "number" },
+        "locationName": { "type": "string" },
+        "factors": { "type": "array", "items": { "type": "string" } },
+        "isIntervened": { "type": "boolean" },
+        "interventionMessage": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "vehicleId", "eventType", "severity"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "SafeFleet registered user accounts and RBAC roles"
+    },
+    "vehicles": {
+      "schema": "Vehicle",
+      "description": "Fleet vehicles list and live telematics"
+    },
+    "drivers": {
+      "schema": "Driver",
+      "description": "Fleet drivers list and safety records"
+    },
+    "incidents": {
+      "schema": "Incident",
+      "description": "Real-time safety events and incident audit logs"
+    }
+  }
+}

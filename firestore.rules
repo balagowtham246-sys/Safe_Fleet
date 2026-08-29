@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny catch-all to prevent unauthorized access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions for Authentication & Role-Based Access Control
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasUserProfile() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return hasUserProfile() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data : null;
+    }
+
+    function isManager() {
+      return hasUserProfile() && getUserData() != null && getUserData().role == 'manager';
+    }
+
+    function isDriver() {
+      return hasUserProfile() && getUserData() != null && getUserData().role == 'driver';
+    }
+
+    function getDriverId() {
+      return hasUserProfile() && getUserData() != null ? getUserData().driverId : null;
+    }
+
+    // USERS COLLECTION (User profiles & RBAC roles)
+    match /users/{userId} {
+      // Users can read their own profile; Fleet Managers can view all user profiles
+      allow get: if isSignedIn() && (request.auth.uid == userId || isManager());
+      allow list: if isManager();
+
+      // Users can initialize/update their own profile upon authentication; Managers can manage all
+      allow create, update: if isSignedIn() && (request.auth.uid == userId || isManager() || !hasUserProfile());
+      allow delete: if isManager();
+    }
+
+    // DRIVERS COLLECTION (Fleet driver records & safety profiles)
+    match /drivers/{driverId} {
+      // Authenticated users can read, list, create, and update driver records (needed for onboarding & driver ID generation); only managers can delete
+      allow get, list: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isManager();
+    }
+
+    // VEHICLES COLLECTION (Fleet telematics & vehicles)
+    match /vehicles/{vehicleId} {
+      // Authenticated drivers and managers can read vehicle telemetry
+      allow get, list: if isSignedIn();
+
+      // Only fleet managers can create or modify vehicle assignments and master telemetry
+      allow create, update, delete: if isManager();
+    }
+
+    // INCIDENTS COLLECTION (Safety events & violation audit logs)
+    match /incidents/{incidentId} {
+      // Managers can read all incidents; Drivers can only read/list their own safety incidents
+      allow get: if isManager() || (isDriver() && resource.data.driverId == getDriverId());
+      allow list: if isManager() || (isDriver() && resource.data.driverId == getDriverId());
+
+      // Managers can log incidents for any driver; Drivers can only log incidents for their own driverId
+      allow create: if isManager() || (isDriver() && request.resource.data.driverId == getDriverId());
+
+      // Only fleet managers can update or delete incident logs
+      allow update, delete: if isManager();
+    }
+  }
+}
+
